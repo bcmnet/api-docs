@@ -1,0 +1,587 @@
+openapi: 3.0.2
+info:
+  title: Transfer API
+  version: 1.0.0
+  description: API documentation for the transfer API
+servers:
+  - url: ""
+    description: Dev Server API
+paths:  
+  "/users/{userId}/funds/{fundId}/transfers":
+    summary: Path used to manage the list of transfers.
+    description: >-
+      The REST endpoint/path used to list and create zero or more `Transfer` entities.  This path
+      contains a `GET` and `POST` operation to perform the list and create tasks, respectively.
+    servers:
+      - url: ""
+        description: Dev Server API Endpoint
+    get:
+      tags:
+        - Transfers
+      responses:
+        "200":
+          $ref: "#/components/responses/paginated_transfer_list"
+      operationId: gettransfers
+      summary: List All transfers
+      description: Gets a list of all `Transfer` entities.
+    post:
+      tags:
+        - Transfers
+      requestBody:
+        description: A new `Transfer` to be created.
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Transfer"
+            examples:
+              LOAD:
+                value:
+                  amount: 10
+                  fee_amount: 0
+                  note: Sample Note
+                  currency: USD
+                  ip_address: 10.10.10.5
+                  from_fund_id: bfdc93dd-4019-4f5a-84df-9cfc21d8ce2c
+                  type: LOAD
+              WIRE:
+                value:
+                  amount: 40
+                  fee_amount: 0
+                  note: Sample Note
+                  currency: USD
+                  ip_address: 10.10.10.5
+                  type: WIRE
+              WIRE_INT:
+                value:
+                  amount: 60
+                  fee_amount: 0
+                  note: Sample Note
+                  currency: USD
+                  ip_address: 10.10.10.5
+                  type: WIRE_INT
+              UNLOAD:
+                value:
+                  amount: 1
+                  fee_amount: 0
+                  note: Sample Note
+                  currency: USD
+                  ip_address: 10.10.10.5
+                  to_fund_id: bfdc93dd-4019-4f5a-84df-9cfc21d8ce2c
+                  type: UNLOAD
+        required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/wire_response"
+      operationId: createTransfer
+      summary: List All transfers
+      description: Creates a new instance of a `Transfer`.
+    parameters:
+      - name: userId
+        schema:
+          type: string
+        in: path
+        required: true
+      - name: fundId
+        schema:
+          type: string
+        in: path
+        required: true
+  "/users/{userId}/funds/deposits":          
+          summary: Creates Deposit Account
+          post:
+            operationId: create_deposit_Accounts
+            summary: Creates Deposit Account
+            requestBody:
+              content:
+                application/json:
+                  schema:
+                    $ref: "#/components/schemas/Deposit"
+                  examples:
+                    body:
+                      value:
+                        nickname: machnet deposit account
+              required: true
+            tags:
+              - Deposit Account
+            responses:
+              "200":
+                $ref: "#/components/responses/deposit_response"
+            description: Created Deposit Account
+          parameters:
+            - name: userId
+              schema:
+                type: string
+              in: path
+              required: true
+            - name: Authorization
+              schema:
+                type: string
+                example: "Bearer token"
+              in: header
+              required: true
+  "/users/{userId}/funds/deposits/{fundId}/accounts":
+    get:      
+      tags:
+        - Deposit Account
+      responses:
+        "200":
+          $ref: "#/components/responses/paginated_transfer_list"
+      operationId: get_Accounts
+      summary: List All Available Accounts under the current deposit account
+      description: Gets a list of all `Account` entities.
+    post:
+      tags:
+        - Deposit Account
+      operationId: create_A/C_or_CARD_against_the_deposit_account
+      summary: Create a/c or CARD against the deposit account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Account"
+            examples:
+              account:
+                value:
+                  nickname: machnet deposit account
+              card:
+                value:
+                  nickname: machnet card
+                  type: CARD
+        required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/deposit_response"
+      description: Generate routing number and account number for deposit account/Create a card against deposit account
+    parameters:
+      - name: userId
+        schema:
+          type: string
+        in: path
+        required: true
+      - name: fundId
+        schema:
+          type: string
+        in: path
+        required: true    
+  "/users/{userId}/funds/deposits/{fundId}/accounts/{accountId}":    
+    summary: Path used to fetch manage single account
+    description: Account linked to deposit account APIs
+    get:
+      operationId: get_AccountsId_information
+      summary: List Single Account Informtion
+      tags:
+        - Deposit Account
+      parameters:
+          - name: userId
+            description: user Id
+            schema:
+              type: string
+            in: path
+            required: true
+          - name: fundId
+            schema:
+              type: string
+            in: path
+            required: true
+          - name: accountId
+            schema:
+              type: string
+            in: path
+            required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/account_response"
+    patch:
+      operationId: patch_AccountsId_details
+      summary: Patch Account Details
+      tags:
+        - Deposit Account
+      description: Used to patch status of a Card account linked to deposit account
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AccountPatch"
+            examples:
+              activate:
+                value:
+                  status: ACTIVE
+              deactivate:
+                value:
+                  status: INACTIVE
+              terminate:
+                value:
+                  status: TERMINATE
+        required: true
+      parameters:
+        - name: userId
+          description: user Id
+          schema:
+            type: string
+          in: path
+          required: true
+        - name: fundId
+          schema:
+            type: string
+          in: path
+          required: true
+        - name: accountId
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        "200":
+          $ref: "#/components/responses/account_response"
+  "/users/{userId}/funds/deposits/{fundId}/accounts/{accountId}/details":
+    summary: Get details about an account
+    description: Paths related to a particular Account Id
+    parameters:
+      - name: userId
+        description: user Id
+        schema:
+          type: string
+        in: path
+        required: true
+      - name: fundId
+        schema:
+          type: string
+        in: path
+        required: true
+      - name: accountId
+        schema:
+          type: string
+        in: path
+        required: true
+    get:
+      operationId: getAccountsId_Complete_Details
+      summary: get AccountsId Complete Details
+      description: Paths related to a particular Account Id
+      tags:
+        - Deposit Account      
+      responses:
+        "200":
+          $ref: "#/components/responses/account_detail_response"
+        "400":
+          $ref: "#/components/responses/bad_request_response"
+  "/users/{userId}/funds/{fundId}/transfers/{transferId}":
+    summary: Path used to manage a single Transfer.
+    description: >-
+      The REST endpoint/path used to get, update, and delete single instances of an `Transfer`.  This
+      path contains `GET`, `PUT`, and `DELETE` operations used to perform the get, update, and delete
+      tasks, respectively.
+
+    get:
+      summary: gets detail of a transaction
+      operationId: get_transfer_details
+      tags:
+        - Transfers
+      responses:
+        "200":
+          $ref: "#/components/responses/wire_response"
+    parameters:
+      - name: userId
+        description: user Id
+        schema:
+          type: string
+        in: path
+        required: true
+      - name: fundId
+        schema:
+          type: string
+        in: path
+        required: true
+      - name: transferId
+        schema:
+          type: string
+        in: path
+        required: true
+components:
+  # define reusable parameters:
+  schemas:
+    User:
+      title: User Schema
+      description: ""
+      type: object
+      properties:
+        first_name:
+          type: string
+          example: "firstname"
+        last_name:
+          type: string
+          example: "lastname"
+        email:
+          type: string
+          example: "john@doe.com"
+        gender:
+          type: string
+          example: "M"
+        date_of_birth:
+          format: date
+          type: string
+        mobile_phone:
+          type: string
+        business:
+          type: boolean
+        ip_address:
+          type: string
+        type:
+          enum:
+            - SEND
+            - RECEIVE
+          type: string
+          example: "SEND|RECEIVE"
+        enable_deposit:
+          type: boolean
+      example:
+        first_name: Tenzin
+        last_name: Norgay
+        email: test@test.com
+        gender: male
+        date_of_birth: "2000-01-01"
+        mobile_phone: "9879879872"
+        business: false
+        ip_address: 10.0.0.1
+        type: SEND
+        enable_deposit: true
+    Transfer:
+      title: Transfer Schema
+      description: ""
+      required:
+        - type
+      type: object
+      properties:
+        amount:
+          format: int32
+          type: integer
+        fee_amount:
+          format: int32
+          type: integer
+        note:
+          type: string
+        currency:
+          type: string
+        ip_address:
+          type: string
+        from_fund_id:
+          description: required in case of load transfer
+          type: string
+        type:
+          enum:
+            - LOAD
+            - UNLOAD
+            - WIRE
+            - WIRE_INT
+          type: string
+        to_fund_id:
+          description: required in case of unload transfers
+          type: string        
+      example:
+        amount: 1
+        fee_amount: 0
+        note: Sample Note
+        currency: USD
+        ip_address: 10.10.10.5
+        from_fund_id: d1f9eb6c-c4a2-4c6c-a590-276990995d66
+        type: LOAD
+    Deposit:
+      title: Deposit Request Schema
+      description: ""
+      required:
+        - nickname
+      type: object
+      properties:
+        nickname:
+          format: string
+          type: string        
+    Account:
+        title: Account Request Schema
+        description: ""
+        required:
+          - nickname
+        type: object
+        properties:
+          nickname:
+            format: string
+            type: string
+          type:
+            format: string
+            type: string
+    AccountPatch:
+              title: Account Patch Schema
+              description: ""
+              required:
+                - status
+              type: object
+              properties:
+                status:
+                  format: string
+                  type: string                
+  responses:
+    bad_request_response:
+      description: Response received for non existent fund id request
+      content:
+        application/json:
+          examples:
+            invalid_account_id:
+              value:
+                code: BAD_REQUEST
+                status: 400
+                message: Account with given id not active or UserAccount with given id was not found
+    wire_response:
+      content:
+        application/json:
+          examples:
+            wire:
+              value:
+                account_number: "1235674342"
+                amount: 40
+                currency: USD
+                from_fund_id: 5189a69c-6ce3-46b6-a894-448044e96972
+                id: ae5d7e21-d8b4-4d7c-85ac-434d0f2cadc5
+                ip_address: 10.10.10.5
+                note: Sample Note
+                routing_number: 026009593
+                status: INITIATED
+                type: WIRE
+                user_id: ea04c829-9a8c-47e8-889b-ecc555eb54b1
+            load:
+              value:
+                amount: 200
+                currency: USD
+                from_fund_id: 55a9768c-0b7a-4dcd-a1f7-fb0d42792056
+                id: dbfe8166-d6e0-4572-a92f-85d06d292347
+                ip_address: 10.10.10.5
+                status: INITIATED
+                to_fund_id: 5189a69c-6ce3-46b6-a894-448044e96972
+                type: LOAD
+                user_id: ea04c829-9a8c-47e8-889b-ecc555eb54b1
+            unload:
+              value:
+                amount: 200
+                currency: USD
+                from_fund_id: 5189a69c-6ce3-46b6-a894-448044e96972
+                id: dbfe8166-d6e0-4572-a92f-85d06d292347
+                ip_address: 10.10.10.5
+                status: INITIATED
+                to_fund_id: 55a9768c-0b7a-4dcd-a1f7-fb0d42792056
+                type: UNLOAD
+                user_id: ea04c829-9a8c-47e8-889b-ecc555eb54b1
+            wire_int:
+              value:
+                account_number: "1235674342"
+                amount: 40
+                currency: USD
+                from_fund_id: 5189a69c-6ce3-46b6-a894-448044e96972
+                id: aab6c604-179c-4ee5-a849-87a1777aa181
+                ip_address: 10.10.10.5
+                note: Sample Note
+                status: INITIATED
+                swift_code: CCBPFRPPXXX
+                type: WIRE_INT
+                user_id: ea04c829-9a8c-47e8-889b-ecc555eb54b1
+      description: Response received for successful wire transfer request
+    paginated_transfer_list:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/Transfer"
+          examples:
+            list:
+              value:
+                paging:
+                  page: 1
+                  page_size: 25
+                  total_count: 41
+                results:
+                  - amount: 40
+                    currency: USD
+                    from_fund_id: 5189a69c-6ce3-46b6-a894-448044e96972
+                    id: ae5d7e21-d8b4-4d7c-85ac-434d0f2cadc5
+                    ip_address: 10.10.10.5
+                    note: Sample Note
+                    status: INITIATED
+                    type: WIRE
+                    user_id: ea04c829-9a8c-47e8-889b-ecc555eb54b1
+                  - amount: 200
+                    currency: USD
+                    from_fund_id: 55a9768c-0b7a-4dcd-a1f7-fb0d42792056
+                    id: dbfe8166-d6e0-4572-a92f-85d06d292347
+                    ip_address: 10.10.10.5
+                    status: INITIATED
+                    to_fund_id: 5189a69c-6ce3-46b6-a894-448044e96972
+                    type: LOAD
+                    user_id: ea04c829-9a8c-47e8-889b-ecc555eb54b1
+                  - amount: 40
+                    currency: USD
+                    from_fund_id: 5189a69c-6ce3-46b6-a894-448044e96972
+                    id: aab6c604-179c-4ee5-a849-87a1777aa181
+                    ip_address: 10.10.10.5
+                    note: Sample Note
+                    status: INITIATED
+                    type: WIRE_INT
+                    user_id: ea04c829-9a8c-47e8-889b-ecc555eb54b1
+      description: paginated transfer list
+    deposit_response:
+      content:
+        application/json:
+          examples:
+            body:
+              value:
+                funding_source_type: DEPOSIT
+                id: 5189a69c-6ce3-46b6-a894-448044e96972
+                user_id: ea04c829-9a8c-47e8-889b-ecc555eb54b1
+                verification_status: VERIFIED
+      description: deposit account response
+    account_response:
+      content:
+        application/json:
+            examples:
+              body:
+                value:
+                  active: true
+                  id: 5189a69c-6ce3-46b6-a894-448044e96972
+                  nick_name: My Nick Name
+                  expiry_date: "2026-05-31"                  
+      description: deposit account response
+    account_detail_response:
+        content:
+          application/json:
+              examples:
+                card:
+                  value:
+                    active: true
+                    id: 5189a69c-6ce3-46b6-a894-448044e96972
+                    nick_name: My Nick Name
+                    expiry_date: "2026-05-31"
+                    card_number: "5119130505159048"
+                    cvc: 646                  
+                account:
+                    value:
+                      active: true
+                      id: 5189a69c-6ce3-46b6-a894-448044e96972
+                      nick_name: My Nick Name
+                      account_number: "0037275353"
+                      routing_number: "026009593"                                  
+        description: deposit account response
+  securitySchemes:
+    X-Client-Id:
+      type: apiKey
+      description: Client Id
+      name: X-Client-Id
+      in: header
+    X-Client-Secret:
+      type: apiKey
+      description: Client Secret
+      name: X-Client-Secret
+      in: header
+security:
+  - X-Client-Id: []
+    X-Client-Secret: []
+tags:
+  - name: Transfers
+    description: "Transfer APIs"
+  - name: Deposit Account
+    description: "Deposit Account APIs"
